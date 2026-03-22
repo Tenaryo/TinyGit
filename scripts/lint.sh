@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 cd "$PROJECT_ROOT"
 
-FILES=$(find src include -name '*.cpp' -o -name '*.hpp' 2>/dev/null)
+FILES=$(find src include -name '*.cpp' -o -name '*.hpp' 2>/dev/null) || true
 
 if [ -z "$FILES" ]; then
     echo "No C++ files found"
