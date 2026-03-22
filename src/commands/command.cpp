@@ -17,6 +17,9 @@ std::unique_ptr<Command> Command::create(std::string_view name) {
     if (name == "ls-tree") {
         return std::make_unique<LsTreeCommand>();
     }
+    if (name == "write-tree") {
+        return std::make_unique<WriteTreeCommand>();
+    }
     return nullptr;
 }
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <expected>
+#include <filesystem>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -22,6 +23,12 @@ struct TreeEntry {
 class Tree {
   public:
     static std::expected<std::vector<TreeEntry>, std::string> parse(std::string_view raw_data);
+
+    static std::string create_tree_data(const std::vector<TreeEntry>& entries);
+
+    static std::expected<std::string, std::string> write_tree(const std::filesystem::path& dir);
 };
+
+std::string hex_to_bytes(std::string_view hex);
 
 } // namespace git
