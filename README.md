@@ -1,59 +1,80 @@
-[![progress-banner](https://backend.codecrafters.io/progress/git/64d51145-8473-4d93-ac37-876d37edffa3)](https://app.codecrafters.io/users/codecrafters-bot?r=2qF)
+# Mini Git
 
-This is a starting point for C++ solutions to the
-["Build Your Own Git" Challenge](https://codecrafters.io/challenges/git).
+A minimal Git implementation in C++23, supporting core Git plumbing commands.
 
-In this challenge, you'll build a small Git implementation that's capable of
-initializing a repository, creating commits and cloning a public repository.
-Along the way we'll learn about the `.git` directory, Git objects (blobs,
-commits, trees etc.), Git's transfer protocols and more.
+## Features
 
-**Note**: If you're viewing this repo on GitHub, head over to
-[codecrafters.io](https://codecrafters.io) to try the challenge.
+- **init** - Initialize a new Git repository
+- **hash-object** - Compute object hash and optionally write to object store
+- **cat-file** - Retrieve and display object contents
+- **ls-tree** - List contents of a tree object
+- **write-tree** - Create a tree object from the current working directory
+- **commit-tree** - Create a commit object
 
-# Passing the first stage
+## Building
 
-The entry point for your Git implementation is in `src/main.cpp`. Study and
-uncomment the relevant code, and push your changes to pass the first stage:
-
-```sh
-git commit -am "pass 1st stage" # any msg
-git push origin master
+```bash
+cmake -B build -S .
+cmake --build build
 ```
 
-That's all!
+## Usage
 
-# Stage 2 & beyond
+```bash
+# Initialize repository
+./build/git init
 
-Note: This section is for stages 2 and beyond.
+# Create a blob from file
+./build/git hash-object -w <file>
 
-1. Ensure you have `cmake` installed locally
-1. Run `./your_program.sh` to run your Git implementation, which is implemented
-   in `src/main.cpp`.
-1. Commit your changes and run `git push origin master` to submit your solution
-   to CodeCrafters. Test output will be streamed to your terminal.
+# Read object contents
+./build/git cat-file -p <sha>
 
-# Testing locally
+# List tree contents
+./build/git ls-tree [--name-only] <tree-sha>
 
-The `your_program.sh` script is expected to operate on the `.git` folder inside
-the current working directory. If you're running this inside the root of this
-repository, you might end up accidentally damaging your repository's `.git`
-folder.
+# Create tree from working directory
+./build/git write-tree
 
-We suggest executing `your_program.sh` in a different folder when testing
-locally. For example:
-
-```sh
-mkdir -p /tmp/testing && cd /tmp/testing
-/path/to/your/repo/your_program.sh init
+# Create commit
+./build/git commit-tree <tree-sha> -p <parent-sha> -m "<message>"
 ```
 
-To make this easier to type out, you could add a
-[shell alias](https://shapeshed.com/unix-alias/):
+## Architecture
 
-```sh
-alias mygit=/path/to/your/repo/your_program.sh
-
-mkdir -p /tmp/testing && cd /tmp/testing
-mygit init
 ```
+include/
+├── git.hpp                 # Unified header
+├── commands/               # Command implementations
+│   ├── command.hpp         # Base class
+│   ├── init.hpp
+│   ├── cat_file.hpp
+│   ├── hash_object.hpp
+│   ├── ls_tree.hpp
+│   ├── write_tree.hpp
+│   └── commit_tree.hpp
+└── objects/                # Git object types
+    ├── blob.hpp
+    ├── tree.hpp
+    ├── commit.hpp
+    └── object_store.hpp    # Low-level storage
+
+src/
+├── main.cpp
+├── commands/
+└── objects/
+```
+
+## Design
+
+- **Layered architecture**: Command -> Object -> Store
+- **Factory pattern**: `Command::create()` for command dispatch
+- **Modern C++**: Uses `std::expected`, `std::string_view`, `std::span` (C++23)
+- **Error handling**: Functional-style error propagation with `std::expected<T, E>`
+
+## Dependencies
+
+- CMake 3.13+
+- C++23 compiler
+- OpenSSL (SHA-1)
+- zlib (compression)
