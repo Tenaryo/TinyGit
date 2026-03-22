@@ -8,6 +8,9 @@ std::unique_ptr<Command> Command::create(std::string_view name) {
     if (name == "cat-file") {
         return std::make_unique<CatFileCommand>();
     }
+    if (name == "commit-tree") {
+        return std::make_unique<CommitTreeCommand>();
+    }
     if (name == "hash-object") {
         return std::make_unique<HashObjectCommand>();
     }
