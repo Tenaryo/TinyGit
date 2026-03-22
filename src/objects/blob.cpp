@@ -16,4 +16,9 @@ std::expected<std::string, std::string> Blob::extract_content(std::string_view r
     return std::string(raw_data.substr(null_pos + 1));
 }
 
+std::expected<std::string, std::string> Blob::create_blob_data(std::string_view content) {
+    std::string header = "blob " + std::to_string(content.size()) + '\0';
+    return header + std::string(content);
+}
+
 } // namespace git
