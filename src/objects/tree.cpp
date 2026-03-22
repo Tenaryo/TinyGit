@@ -1,10 +1,76 @@
 #include "objects/tree.hpp"
+#include "objects/blob.hpp"
+#include "objects/object_store.hpp"
 
 #include <algorithm>
+#include <filesystem>
 #include <iomanip>
 #include <sstream>
 
 namespace git {
+
+std::string hex_to_bytes(std::string_view hex) {
+    std::string bytes;
+    for (size_t i = 0; i < hex.size(); i += 2) {
+        unsigned int byte = 0;
+        std::stringstream ss;
+        ss << std::hex << hex.substr(i, 2);
+        ss >> byte;
+        bytes += static_cast<char>(byte);
+    }
+    return bytes;
+}
+
+std::string Tree::create_tree_data(const std::vector<TreeEntry>& entries) {
+    std::string content;
+
+    for (const auto& entry : entries) {
+        content += entry.mode + " " + entry.name + '\0';
+        content += hex_to_bytes(entry.sha);
+    }
+
+    return "tree " + std::to_string(content.size()) + '\0' + content;
+}
+
+std::expected<std::string, std::string> Tree::write_tree(const std::filesystem::path& dir) {
+    std::vector<TreeEntry> entries;
+
+    for (const auto& entry : std::filesystem::directory_iterator(dir)) {
+        std::string name = entry.path().filename().string();
+
+        if (name == ".git") {
+            continue;
+        }
+
+        if (entry.is_regular_file()) {
+            auto sha = Blob::write_from_file(entry.path());
+            if (!sha) {
+                return std::unexpected(sha.error());
+            }
+            entries.push_back({"100644", name, *sha});
+        } else if (entry.is_directory()) {
+            auto sha = write_tree(entry.path());
+            if (!sha) {
+                return std::unexpected(sha.error());
+            }
+            entries.push_back({"40000", name, *sha});
+        }
+    }
+
+    std::sort(entries.begin(), entries.end(), [](const TreeEntry& a, const TreeEntry& b) {
+        return a.name < b.name;
+    });
+
+    std::string data = create_tree_data(entries);
+    std::string sha = ObjectStore::compute_sha1(data);
+    std::string compressed = ObjectStore::compress(data);
+    auto result = ObjectStore::write_object(sha, compressed);
+    if (!result) {
+        return std::unexpected(result.error());
+    }
+
+    return sha;
+}
 
 std::expected<std::vector<TreeEntry>, std::string> Tree::parse(std::string_view raw_data) {
     size_t null_pos = raw_data.find('\0');
