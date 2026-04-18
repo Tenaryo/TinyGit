@@ -1,4 +1,4 @@
-# Mini Git
+# TinyGit
 
 A minimal Git implementation in C++23, supporting core Git plumbing commands.
 
