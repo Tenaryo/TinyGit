@@ -4,7 +4,7 @@
 #include <span>
 #include <string_view>
 
-namespace git {
+namespace commands {
 
 class Command {
   public:
@@ -14,4 +14,4 @@ class Command {
     static auto create(std::string_view name) -> std::unique_ptr<Command>;
 };
 
-} // namespace git
+} // namespace commands

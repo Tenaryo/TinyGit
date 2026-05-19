@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-namespace git {
+namespace commands {
 
 auto HashObjectCommand::execute(std::span<std::string_view> args) -> int {
     bool write_flag = false;
@@ -22,7 +22,7 @@ auto HashObjectCommand::execute(std::span<std::string_view> args) -> int {
         return 1;
     }
 
-    auto sha = Blob::write_from_file(std::string(file_path), write_flag);
+    auto sha = objects::Blob::write_from_file(std::string(file_path), write_flag);
     if (!sha) {
         std::cerr << sha.error() << "\n";
         return 1;
@@ -32,4 +32,4 @@ auto HashObjectCommand::execute(std::span<std::string_view> args) -> int {
     return 0;
 }
 
-} // namespace git
+} // namespace commands

@@ -1,12 +1,12 @@
 #pragma once
 
-#include "command.hpp"
+#include "commands/command.hpp"
 
-namespace git {
+namespace commands {
 
 class HashObjectCommand : public Command {
   public:
     auto execute(std::span<std::string_view> args) -> int override;
 };
 
-} // namespace git
+} // namespace commands

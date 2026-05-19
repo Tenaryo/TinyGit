@@ -1,32 +1,24 @@
 #include "objects/tree.hpp"
+#include "core/object_store.hpp"
 #include "objects/blob.hpp"
-#include "objects/object_store.hpp"
+#include "util/hex.hpp"
 
 #include <algorithm>
+#include <array>
 #include <filesystem>
-#include <iomanip>
-#include <sstream>
 
-namespace git {
-
-auto hex_to_bytes(std::string_view hex) -> std::string {
-    std::string bytes;
-    for (size_t i = 0; i < hex.size(); i += 2) {
-        unsigned int byte = 0;
-        std::stringstream stream;
-        stream << std::hex << hex.substr(i, 2);
-        stream >> byte;
-        bytes += static_cast<char>(byte);
-    }
-    return bytes;
-}
+namespace objects {
 
 auto Tree::create_tree_data(const std::vector<TreeEntry>& entries) -> std::string {
     std::string content;
 
     for (const auto& entry : entries) {
         content += entry.mode + " " + entry.name + '\0';
-        content += hex_to_bytes(entry.sha);
+        auto sha_bytes = util::hex_to_bytes(entry.sha);
+        if (!sha_bytes) {
+            continue;
+        }
+        content += *sha_bytes;
     }
 
     return "tree " + std::to_string(content.size()) + '\0' + content;
@@ -62,14 +54,7 @@ auto Tree::write_tree(const std::filesystem::path& dir) -> std::expected<std::st
     });
 
     std::string data = create_tree_data(entries);
-    std::string sha = ObjectStore::compute_sha1(data);
-    std::string compressed = ObjectStore::compress(data);
-    auto result = ObjectStore::write_object(sha, compressed);
-    if (!result) {
-        return std::unexpected(result.error());
-    }
-
-    return sha;
+    return core::ObjectStore::store_object(data);
 }
 
 auto Tree::parse(std::string_view raw_data) -> std::expected<std::vector<TreeEntry>, std::string> {
@@ -107,22 +92,14 @@ auto Tree::parse(std::string_view raw_data) -> std::expected<std::vector<TreeEnt
             return std::unexpected("Invalid tree entry: insufficient SHA bytes");
         }
 
-        std::ostringstream oss;
-        for (size_t i = 0; i < 20; ++i) {
-            oss << std::hex << std::setw(2) << std::setfill('0')
-                << static_cast<int>(static_cast<unsigned char>(data[i]));
-        }
-        std::string sha = oss.str();
+        std::string sha = util::bytes_to_hex(
+            std::span<const std::uint8_t>(reinterpret_cast<const std::uint8_t*>(data.data()), 20));
         data = data.substr(20);
 
         entries.push_back({std::move(mode), std::move(name), std::move(sha)});
     }
 
-    std::sort(entries.begin(), entries.end(), [](const TreeEntry& left, const TreeEntry& right) {
-        return left.name < right.name;
-    });
-
     return entries;
 }
 
-} // namespace git
+} // namespace objects

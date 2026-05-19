@@ -1,7 +1,7 @@
 #include "objects/commit.hpp"
-#include "objects/object_store.hpp"
+#include "core/object_store.hpp"
 
-namespace git {
+namespace objects {
 
 auto Commit::create_commit_data(std::string_view tree_sha,
                                 std::string_view parent_sha,
@@ -21,14 +21,7 @@ auto Commit::write_commit(std::string_view tree_sha,
                           std::string_view parent_sha,
                           std::string_view message) -> std::expected<std::string, std::string> {
     std::string data = create_commit_data(tree_sha, parent_sha, message);
-    std::string sha = ObjectStore::compute_sha1(data);
-    std::string compressed = ObjectStore::compress(data);
-    auto result = ObjectStore::write_object(sha, compressed);
-    if (!result) {
-        return std::unexpected(result.error());
-    }
-
-    return sha;
+    return core::ObjectStore::store_object(data);
 }
 
-} // namespace git
+} // namespace objects

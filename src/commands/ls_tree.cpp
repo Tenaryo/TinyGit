@@ -1,12 +1,12 @@
 #include "commands/ls_tree.hpp"
-#include "objects/object_store.hpp"
+#include "core/object_store.hpp"
 #include "objects/tree.hpp"
 
 #include <iomanip>
 #include <iostream>
 #include <sstream>
 
-namespace git {
+namespace commands {
 
 namespace {
 auto format_mode(const std::string& mode) -> std::string {
@@ -33,13 +33,13 @@ auto LsTreeCommand::execute(std::span<std::string_view> args) -> int {
         return 1;
     }
 
-    auto raw_data = ObjectStore::read_object(sha);
+    auto raw_data = core::ObjectStore::read_object(sha);
     if (!raw_data) {
         std::cerr << raw_data.error() << "\n";
         return 1;
     }
 
-    auto entries = Tree::parse(*raw_data);
+    auto entries = objects::Tree::parse(*raw_data);
     if (!entries) {
         std::cerr << entries.error() << "\n";
         return 1;
@@ -57,4 +57,4 @@ auto LsTreeCommand::execute(std::span<std::string_view> args) -> int {
     return 0;
 }
 
-} // namespace git
+} // namespace commands

@@ -1,4 +1,4 @@
-#include "git.hpp"
+#include "commands/command.hpp"
 
 #include <iostream>
 #include <vector>
@@ -12,7 +12,7 @@ auto main(int argc, char* argv[]) -> int {
         return EXIT_FAILURE;
     }
 
-    auto cmd = git::Command::create(argv[1]);
+    auto cmd = commands::Command::create(argv[1]);
     if (!cmd) {
         std::cerr << "Unknown command " << argv[1] << '\n';
         return EXIT_FAILURE;

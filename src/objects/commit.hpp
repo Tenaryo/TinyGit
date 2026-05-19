@@ -4,7 +4,7 @@
 #include <string>
 #include <string_view>
 
-namespace git {
+namespace objects {
 
 class Commit {
   public:
@@ -17,4 +17,4 @@ class Commit {
                              std::string_view message) -> std::expected<std::string, std::string>;
 };
 
-} // namespace git
+} // namespace objects

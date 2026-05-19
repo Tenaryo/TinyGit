@@ -5,7 +5,7 @@
 #include <string>
 #include <string_view>
 
-namespace git {
+namespace objects {
 
 class Blob {
   public:
@@ -18,4 +18,4 @@ class Blob {
         -> std::expected<std::string, std::string>;
 };
 
-} // namespace git
+} // namespace objects

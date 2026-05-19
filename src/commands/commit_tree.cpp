@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-namespace git {
+namespace commands {
 
 auto CommitTreeCommand::execute(std::span<std::string_view> args) -> int {
     std::string_view tree_sha;
@@ -25,7 +25,7 @@ auto CommitTreeCommand::execute(std::span<std::string_view> args) -> int {
         return 1;
     }
 
-    auto sha = Commit::write_commit(tree_sha, parent_sha, message);
+    auto sha = objects::Commit::write_commit(tree_sha, parent_sha, message);
     if (!sha) {
         std::cerr << sha.error() << "\n";
         return 1;
@@ -35,4 +35,4 @@ auto CommitTreeCommand::execute(std::span<std::string_view> args) -> int {
     return 0;
 }
 
-} // namespace git
+} // namespace commands

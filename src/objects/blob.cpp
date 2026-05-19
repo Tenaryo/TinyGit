@@ -1,9 +1,9 @@
 #include "objects/blob.hpp"
-#include "objects/object_store.hpp"
+#include "core/object_store.hpp"
 
 #include <fstream>
 
-namespace git {
+namespace objects {
 
 auto Blob::extract_content(std::string_view raw_data) -> std::expected<std::string, std::string> {
     size_t null_pos = raw_data.find('\0');
@@ -38,17 +38,11 @@ auto Blob::write_from_file(const std::filesystem::path& file_path,
         return std::unexpected(blob_data.error());
     }
 
-    std::string sha = ObjectStore::compute_sha1(*blob_data);
-
     if (write_to_store) {
-        std::string compressed = ObjectStore::compress(*blob_data);
-        auto result = ObjectStore::write_object(sha, compressed);
-        if (!result) {
-            return std::unexpected(result.error());
-        }
+        return core::ObjectStore::store_object(*blob_data);
     }
 
-    return sha;
+    return core::ObjectStore::compute_sha1(*blob_data);
 }
 
-} // namespace git
+} // namespace objects

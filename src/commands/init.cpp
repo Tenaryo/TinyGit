@@ -4,7 +4,7 @@
 #include <fstream>
 #include <iostream>
 
-namespace git {
+namespace commands {
 
 auto InitCommand::execute([[maybe_unused]] std::span<std::string_view> args) -> int {
     try {
@@ -30,4 +30,4 @@ auto InitCommand::execute([[maybe_unused]] std::span<std::string_view> args) -> 
     return 0;
 }
 
-} // namespace git
+} // namespace commands

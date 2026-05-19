@@ -1,10 +1,10 @@
 #include "commands/cat_file.hpp"
+#include "core/object_store.hpp"
 #include "objects/blob.hpp"
-#include "objects/object_store.hpp"
 
 #include <iostream>
 
-namespace git {
+namespace commands {
 
 auto CatFileCommand::execute(std::span<std::string_view> args) -> int {
     if (args.size() < 2) {
@@ -20,13 +20,13 @@ auto CatFileCommand::execute(std::span<std::string_view> args) -> int {
         return 1;
     }
 
-    auto raw_data = ObjectStore::read_object(sha);
+    auto raw_data = core::ObjectStore::read_object(sha);
     if (!raw_data) {
         std::cerr << raw_data.error() << "\n";
         return 1;
     }
 
-    auto content = Blob::extract_content(*raw_data);
+    auto content = objects::Blob::extract_content(*raw_data);
     if (!content) {
         std::cerr << content.error() << "\n";
         return 1;
@@ -36,4 +36,4 @@ auto CatFileCommand::execute(std::span<std::string_view> args) -> int {
     return 0;
 }
 
-} // namespace git
+} // namespace commands

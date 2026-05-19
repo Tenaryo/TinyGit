@@ -7,7 +7,7 @@
 #include <string_view>
 #include <vector>
 
-namespace git {
+namespace objects {
 
 enum class ObjectType : std::uint8_t { Tree, Blob };
 
@@ -36,6 +36,4 @@ class Tree {
     write_tree(const std::filesystem::path& dir) -> std::expected<std::string, std::string>;
 };
 
-auto hex_to_bytes(std::string_view hex) -> std::string;
-
-} // namespace git
+} // namespace objects
