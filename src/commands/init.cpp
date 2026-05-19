@@ -6,7 +6,7 @@
 
 namespace git {
 
-int InitCommand::execute([[maybe_unused]] std::span<std::string_view> args) {
+auto InitCommand::execute([[maybe_unused]] std::span<std::string_view> args) -> int {
     try {
         std::filesystem::create_directory(".git");
         std::filesystem::create_directory(".git/objects");

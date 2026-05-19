@@ -3,7 +3,7 @@
 #include <iostream>
 #include <vector>
 
-int main(int argc, char* argv[]) {
+auto main(int argc, char* argv[]) -> int {
     std::cout << std::unitbuf;
     std::cerr << std::unitbuf;
 

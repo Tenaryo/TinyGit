@@ -6,7 +6,7 @@ namespace git {
 
 class CommitTreeCommand : public Command {
   public:
-    int execute(std::span<std::string_view> args) override;
+    auto execute(std::span<std::string_view> args) -> int override;
 };
 
 } // namespace git

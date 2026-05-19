@@ -8,21 +8,23 @@
 
 namespace git {
 
-static std::string format_mode(const std::string& mode) {
+namespace {
+auto format_mode(const std::string& mode) -> std::string {
     std::ostringstream oss;
     oss << std::setw(6) << std::setfill('0') << mode;
     return oss.str();
 }
+} // namespace
 
-int LsTreeCommand::execute(std::span<std::string_view> args) {
+auto LsTreeCommand::execute(std::span<std::string_view> args) -> int {
     bool name_only = false;
     std::string_view sha;
 
-    for (size_t i = 0; i < args.size(); ++i) {
-        if (args[i] == "--name-only") {
+    for (auto arg : args) {
+        if (arg == "--name-only") {
             name_only = true;
         } else {
-            sha = args[i];
+            sha = arg;
         }
     }
 
@@ -43,12 +45,10 @@ int LsTreeCommand::execute(std::span<std::string_view> args) {
         return 1;
     }
 
-    if (name_only) {
-        for (const auto& entry : *entries) {
+    for (const auto& entry : *entries) {
+        if (name_only) {
             std::cout << entry.name << "\n";
-        }
-    } else {
-        for (const auto& entry : *entries) {
+        } else {
             std::cout << format_mode(entry.mode) << " " << entry.type_name() << " " << entry.sha
                       << "\t" << entry.name << "\n";
         }

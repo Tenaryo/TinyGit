@@ -9,19 +9,19 @@
 
 namespace git {
 
-std::string hex_to_bytes(std::string_view hex) {
+auto hex_to_bytes(std::string_view hex) -> std::string {
     std::string bytes;
     for (size_t i = 0; i < hex.size(); i += 2) {
         unsigned int byte = 0;
-        std::stringstream ss;
-        ss << std::hex << hex.substr(i, 2);
-        ss >> byte;
+        std::stringstream stream;
+        stream << std::hex << hex.substr(i, 2);
+        stream >> byte;
         bytes += static_cast<char>(byte);
     }
     return bytes;
 }
 
-std::string Tree::create_tree_data(const std::vector<TreeEntry>& entries) {
+auto Tree::create_tree_data(const std::vector<TreeEntry>& entries) -> std::string {
     std::string content;
 
     for (const auto& entry : entries) {
@@ -32,7 +32,7 @@ std::string Tree::create_tree_data(const std::vector<TreeEntry>& entries) {
     return "tree " + std::to_string(content.size()) + '\0' + content;
 }
 
-std::expected<std::string, std::string> Tree::write_tree(const std::filesystem::path& dir) {
+auto Tree::write_tree(const std::filesystem::path& dir) -> std::expected<std::string, std::string> {
     std::vector<TreeEntry> entries;
 
     for (const auto& entry : std::filesystem::directory_iterator(dir)) {
@@ -57,8 +57,8 @@ std::expected<std::string, std::string> Tree::write_tree(const std::filesystem::
         }
     }
 
-    std::sort(entries.begin(), entries.end(), [](const TreeEntry& a, const TreeEntry& b) {
-        return a.name < b.name;
+    std::sort(entries.begin(), entries.end(), [](const TreeEntry& left, const TreeEntry& right) {
+        return left.name < right.name;
     });
 
     std::string data = create_tree_data(entries);
@@ -72,7 +72,7 @@ std::expected<std::string, std::string> Tree::write_tree(const std::filesystem::
     return sha;
 }
 
-std::expected<std::vector<TreeEntry>, std::string> Tree::parse(std::string_view raw_data) {
+auto Tree::parse(std::string_view raw_data) -> std::expected<std::vector<TreeEntry>, std::string> {
     size_t null_pos = raw_data.find('\0');
     if (null_pos == std::string_view::npos) {
         return std::unexpected("Invalid tree format: no header null byte");
@@ -118,8 +118,8 @@ std::expected<std::vector<TreeEntry>, std::string> Tree::parse(std::string_view 
         entries.push_back({std::move(mode), std::move(name), std::move(sha)});
     }
 
-    std::sort(entries.begin(), entries.end(), [](const TreeEntry& a, const TreeEntry& b) {
-        return a.name < b.name;
+    std::sort(entries.begin(), entries.end(), [](const TreeEntry& left, const TreeEntry& right) {
+        return left.name < right.name;
     });
 
     return entries;

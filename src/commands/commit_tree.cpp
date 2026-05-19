@@ -5,7 +5,7 @@
 
 namespace git {
 
-int CommitTreeCommand::execute(std::span<std::string_view> args) {
+auto CommitTreeCommand::execute(std::span<std::string_view> args) -> int {
     std::string_view tree_sha;
     std::string_view parent_sha;
     std::string_view message;

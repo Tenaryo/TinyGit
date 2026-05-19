@@ -5,15 +5,15 @@
 
 namespace git {
 
-int HashObjectCommand::execute(std::span<std::string_view> args) {
+auto HashObjectCommand::execute(std::span<std::string_view> args) -> int {
     bool write_flag = false;
     std::string_view file_path;
 
-    for (size_t i = 0; i < args.size(); ++i) {
-        if (args[i] == "-w") {
+    for (auto arg : args) {
+        if (arg == "-w") {
             write_flag = true;
         } else {
-            file_path = args[i];
+            file_path = arg;
         }
     }
 

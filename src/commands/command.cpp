@@ -4,7 +4,7 @@
 
 namespace git {
 
-std::unique_ptr<Command> Command::create(std::string_view name) {
+auto Command::create(std::string_view name) -> std::unique_ptr<Command> {
     if (name == "cat-file") {
         return std::make_unique<CatFileCommand>();
     }

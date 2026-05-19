@@ -1,5 +1,6 @@
 #include "objects/object_store.hpp"
 
+#include <array>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
@@ -9,13 +10,13 @@
 
 namespace git {
 
-std::string ObjectStore::object_path(std::string_view sha) {
+auto ObjectStore::object_path(std::string_view sha) -> std::string {
     std::string dir(sha.substr(0, 2));
     std::string file(sha.substr(2));
     return ".git/objects/" + dir + "/" + file;
 }
 
-std::string ObjectStore::compress(const std::string& data) {
+auto ObjectStore::compress(const std::string& data) -> std::string {
     z_stream stream{};
     stream.next_in = reinterpret_cast<Bytef*>(const_cast<char*>(data.data()));
     stream.avail_in = static_cast<uInt>(data.size());
@@ -25,11 +26,11 @@ std::string ObjectStore::compress(const std::string& data) {
     }
 
     std::string compressed;
-    char buffer[4096];
+    std::array<char, 4096> buffer{};
 
     while (true) {
-        stream.next_out = reinterpret_cast<Bytef*>(buffer);
-        stream.avail_out = sizeof(buffer);
+        stream.next_out = reinterpret_cast<Bytef*>(buffer.data());
+        stream.avail_out = static_cast<uInt>(buffer.size());
 
         int ret = deflate(&stream, Z_FINISH);
         if (ret == Z_STREAM_ERROR) {
@@ -37,7 +38,7 @@ std::string ObjectStore::compress(const std::string& data) {
             return "";
         }
 
-        compressed.append(buffer, sizeof(buffer) - stream.avail_out);
+        compressed.append(buffer.data(), buffer.size() - stream.avail_out);
 
         if (ret == Z_STREAM_END) {
             break;
@@ -48,7 +49,8 @@ std::string ObjectStore::compress(const std::string& data) {
     return compressed;
 }
 
-std::expected<std::string, std::string> ObjectStore::decompress(const std::string& compressed) {
+auto ObjectStore::decompress(const std::string& compressed)
+    -> std::expected<std::string, std::string> {
     z_stream stream{};
     stream.next_in = reinterpret_cast<Bytef*>(const_cast<char*>(compressed.data()));
     stream.avail_in = static_cast<uInt>(compressed.size());
@@ -58,11 +60,11 @@ std::expected<std::string, std::string> ObjectStore::decompress(const std::strin
     }
 
     std::string decompressed;
-    char buffer[4096];
+    std::array<char, 4096> buffer{};
 
     while (true) {
-        stream.next_out = reinterpret_cast<Bytef*>(buffer);
-        stream.avail_out = sizeof(buffer);
+        stream.next_out = reinterpret_cast<Bytef*>(buffer.data());
+        stream.avail_out = static_cast<uInt>(buffer.size());
 
         int ret = inflate(&stream, Z_NO_FLUSH);
         if (ret == Z_STREAM_ERROR || ret == Z_DATA_ERROR || ret == Z_MEM_ERROR) {
@@ -70,7 +72,7 @@ std::expected<std::string, std::string> ObjectStore::decompress(const std::strin
             return std::unexpected("Failed to decompress data");
         }
 
-        decompressed.append(buffer, sizeof(buffer) - stream.avail_out);
+        decompressed.append(buffer.data(), buffer.size() - stream.avail_out);
 
         if (ret == Z_STREAM_END) {
             break;
@@ -81,18 +83,18 @@ std::expected<std::string, std::string> ObjectStore::decompress(const std::strin
     return decompressed;
 }
 
-std::string ObjectStore::compute_sha1(const std::string& data) {
-    unsigned char hash[SHA_DIGEST_LENGTH];
-    SHA1(reinterpret_cast<const unsigned char*>(data.data()), data.size(), hash);
+auto ObjectStore::compute_sha1(const std::string& data) -> std::string {
+    std::array<unsigned char, SHA_DIGEST_LENGTH> hash{};
+    SHA1(reinterpret_cast<const unsigned char*>(data.data()), data.size(), hash.data());
 
     std::ostringstream oss;
-    for (unsigned char c : hash) {
-        oss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(c);
+    for (unsigned char hash_byte : hash) {
+        oss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(hash_byte);
     }
     return oss.str();
 }
 
-std::expected<std::string, std::string> ObjectStore::read_object(std::string_view sha) {
+auto ObjectStore::read_object(std::string_view sha) -> std::expected<std::string, std::string> {
     std::string path = object_path(sha);
 
     if (!std::filesystem::exists(path)) {
@@ -104,21 +106,21 @@ std::expected<std::string, std::string> ObjectStore::read_object(std::string_vie
         return std::unexpected("Failed to open object file: " + path);
     }
 
-    std::stringstream ss;
-    ss << file.rdbuf();
-    std::string compressed = ss.str();
+    std::stringstream stream;
+    stream << file.rdbuf();
+    std::string compressed = stream.str();
 
     return decompress(compressed);
 }
 
-std::expected<void, std::string> ObjectStore::write_object(std::string_view sha,
-                                                           const std::string& compressed_data) {
+auto ObjectStore::write_object(std::string_view sha, const std::string& compressed_data)
+    -> std::expected<void, std::string> {
     std::string path = object_path(sha);
     std::string dir = ".git/objects/" + std::string(sha.substr(0, 2));
 
-    std::error_code ec;
+    std::error_code error_code;
     if (!std::filesystem::exists(dir)) {
-        if (!std::filesystem::create_directory(dir, ec)) {
+        if (!std::filesystem::create_directory(dir, error_code)) {
             return std::unexpected("Failed to create directory: " + dir);
         }
     }

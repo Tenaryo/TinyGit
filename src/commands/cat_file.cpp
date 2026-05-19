@@ -6,7 +6,7 @@
 
 namespace git {
 
-int CatFileCommand::execute(std::span<std::string_view> args) {
+auto CatFileCommand::execute(std::span<std::string_view> args) -> int {
     if (args.size() < 2) {
         std::cerr << "Usage: cat-file -p <sha>\n";
         return 1;

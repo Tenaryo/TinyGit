@@ -5,7 +5,7 @@
 
 namespace git {
 
-int WriteTreeCommand::execute([[maybe_unused]] std::span<std::string_view> args) {
+auto WriteTreeCommand::execute([[maybe_unused]] std::span<std::string_view> args) -> int {
     auto sha = Tree::write_tree(std::filesystem::current_path());
     if (!sha) {
         std::cerr << sha.error() << "\n";
