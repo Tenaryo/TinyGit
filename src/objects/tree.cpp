@@ -7,9 +7,13 @@
 #include <array>
 #include <filesystem>
 
-namespace objects {
+namespace objects::tree {
 
-auto Tree::create_tree_data(const std::vector<TreeEntry>& entries) -> std::string {
+namespace {
+auto write_tree_inner(const std::filesystem::path& dir) -> std::expected<std::string, std::string>;
+} // namespace
+
+auto create_tree_data(const std::vector<TreeEntry>& entries) -> std::string {
     std::string content;
 
     for (const auto& entry : entries) {
@@ -24,7 +28,13 @@ auto Tree::create_tree_data(const std::vector<TreeEntry>& entries) -> std::strin
     return "tree " + std::to_string(content.size()) + '\0' + content;
 }
 
-auto Tree::write_tree(const std::filesystem::path& dir) -> std::expected<std::string, std::string> {
+auto write_tree(const std::filesystem::path& dir) -> std::expected<std::string, std::string> {
+    return write_tree_inner(dir);
+}
+
+namespace {
+
+auto write_tree_inner(const std::filesystem::path& dir) -> std::expected<std::string, std::string> {
     std::vector<TreeEntry> entries;
 
     for (const auto& entry : std::filesystem::directory_iterator(dir)) {
@@ -35,13 +45,13 @@ auto Tree::write_tree(const std::filesystem::path& dir) -> std::expected<std::st
         }
 
         if (entry.is_regular_file()) {
-            auto sha = Blob::write_from_file(entry.path());
+            auto sha = objects::blob::write_from_file(entry.path());
             if (!sha) {
                 return std::unexpected(sha.error());
             }
             entries.push_back({"100644", name, *sha});
         } else if (entry.is_directory()) {
-            auto sha = write_tree(entry.path());
+            auto sha = write_tree_inner(entry.path());
             if (!sha) {
                 return std::unexpected(sha.error());
             }
@@ -54,10 +64,12 @@ auto Tree::write_tree(const std::filesystem::path& dir) -> std::expected<std::st
     });
 
     std::string data = create_tree_data(entries);
-    return core::ObjectStore::store_object(data);
+    return core::store_object(data);
 }
 
-auto Tree::parse(std::string_view raw_data) -> std::expected<std::vector<TreeEntry>, std::string> {
+} // namespace
+
+auto parse(std::string_view raw_data) -> std::expected<std::vector<TreeEntry>, std::string> {
     size_t null_pos = raw_data.find('\0');
     if (null_pos == std::string_view::npos) {
         return std::unexpected("Invalid tree format: no header null byte");
@@ -102,4 +114,4 @@ auto Tree::parse(std::string_view raw_data) -> std::expected<std::vector<TreeEnt
     return entries;
 }
 
-} // namespace objects
+} // namespace objects::tree

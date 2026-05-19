@@ -1,4 +1,4 @@
-#include "commands/cat_file.hpp"
+#include "commands/command.hpp"
 #include "core/object_store.hpp"
 #include "objects/blob.hpp"
 
@@ -6,7 +6,7 @@
 
 namespace commands {
 
-auto CatFileCommand::execute(std::span<std::string_view> args) -> int {
+auto handle_cat_file(std::span<std::string_view> args) -> int {
     if (args.size() < 2) {
         std::cerr << "Usage: cat-file -p <sha>\n";
         return 1;
@@ -20,13 +20,13 @@ auto CatFileCommand::execute(std::span<std::string_view> args) -> int {
         return 1;
     }
 
-    auto raw_data = core::ObjectStore::read_object(sha);
+    auto raw_data = core::read_object(sha);
     if (!raw_data) {
         std::cerr << raw_data.error() << "\n";
         return 1;
     }
 
-    auto content = objects::Blob::extract_content(*raw_data);
+    auto content = objects::blob::extract_content(*raw_data);
     if (!content) {
         std::cerr << content.error() << "\n";
         return 1;

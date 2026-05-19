@@ -1,17 +1,19 @@
 #pragma once
 
-#include <memory>
 #include <span>
 #include <string_view>
 
 namespace commands {
 
-class Command {
-  public:
-    virtual ~Command() = default;
-    virtual auto execute(std::span<std::string_view> args) -> int = 0;
+using Handler = int (*)(std::span<std::string_view>);
 
-    static auto create(std::string_view name) -> std::unique_ptr<Command>;
-};
+auto handle_init(std::span<std::string_view> args) -> int;
+auto handle_cat_file(std::span<std::string_view> args) -> int;
+auto handle_hash_object(std::span<std::string_view> args) -> int;
+auto handle_ls_tree(std::span<std::string_view> args) -> int;
+auto handle_write_tree(std::span<std::string_view> args) -> int;
+auto handle_commit_tree(std::span<std::string_view> args) -> int;
+
+auto run(std::string_view name, std::span<std::string_view> args) -> int;
 
 } // namespace commands

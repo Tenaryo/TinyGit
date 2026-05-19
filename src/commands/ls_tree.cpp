@@ -1,4 +1,4 @@
-#include "commands/ls_tree.hpp"
+#include "commands/command.hpp"
 #include "core/object_store.hpp"
 #include "objects/tree.hpp"
 
@@ -16,7 +16,7 @@ auto format_mode(const std::string& mode) -> std::string {
 }
 } // namespace
 
-auto LsTreeCommand::execute(std::span<std::string_view> args) -> int {
+auto handle_ls_tree(std::span<std::string_view> args) -> int {
     bool name_only = false;
     std::string_view sha;
 
@@ -33,13 +33,13 @@ auto LsTreeCommand::execute(std::span<std::string_view> args) -> int {
         return 1;
     }
 
-    auto raw_data = core::ObjectStore::read_object(sha);
+    auto raw_data = core::read_object(sha);
     if (!raw_data) {
         std::cerr << raw_data.error() << "\n";
         return 1;
     }
 
-    auto entries = objects::Tree::parse(*raw_data);
+    auto entries = objects::tree::parse(*raw_data);
     if (!entries) {
         std::cerr << entries.error() << "\n";
         return 1;

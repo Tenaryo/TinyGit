@@ -1,11 +1,11 @@
-#include "commands/hash_object.hpp"
+#include "commands/command.hpp"
 #include "objects/blob.hpp"
 
 #include <iostream>
 
 namespace commands {
 
-auto HashObjectCommand::execute(std::span<std::string_view> args) -> int {
+auto handle_hash_object(std::span<std::string_view> args) -> int {
     bool write_flag = false;
     std::string_view file_path;
 
@@ -22,7 +22,7 @@ auto HashObjectCommand::execute(std::span<std::string_view> args) -> int {
         return 1;
     }
 
-    auto sha = objects::Blob::write_from_file(std::string(file_path), write_flag);
+    auto sha = objects::blob::write_from_file(std::string(file_path), write_flag);
     if (!sha) {
         std::cerr << sha.error() << "\n";
         return 1;

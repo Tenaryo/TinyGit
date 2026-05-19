@@ -1,32 +1,24 @@
 #include "commands/command.hpp"
-#include "commands/cat_file.hpp"
-#include "commands/commit_tree.hpp"
-#include "commands/hash_object.hpp"
-#include "commands/init.hpp"
-#include "commands/ls_tree.hpp"
-#include "commands/write_tree.hpp"
 
 #include <unordered_map>
 
 namespace commands {
 
-auto Command::create(std::string_view name) -> std::unique_ptr<Command> {
-    using Factory = std::unique_ptr<Command> (*)();
-    static const std::unordered_map<std::string_view, Factory> kRegistry = {
-        {"cat-file",
-         []() -> std::unique_ptr<Command> { return std::make_unique<CatFileCommand>(); }},
-        {"commit-tree",
-         []() -> std::unique_ptr<Command> { return std::make_unique<CommitTreeCommand>(); }},
-        {"hash-object",
-         []() -> std::unique_ptr<Command> { return std::make_unique<HashObjectCommand>(); }},
-        {"init", []() -> std::unique_ptr<Command> { return std::make_unique<InitCommand>(); }},
-        {"ls-tree", []() -> std::unique_ptr<Command> { return std::make_unique<LsTreeCommand>(); }},
-        {"write-tree",
-         []() -> std::unique_ptr<Command> { return std::make_unique<WriteTreeCommand>(); }},
+auto run(std::string_view name, std::span<std::string_view> args) -> int {
+    static const std::unordered_map<std::string_view, Handler> kRegistry = {
+        {"cat-file", handle_cat_file},
+        {"commit-tree", handle_commit_tree},
+        {"hash-object", handle_hash_object},
+        {"init", handle_init},
+        {"ls-tree", handle_ls_tree},
+        {"write-tree", handle_write_tree},
     };
 
     auto it = kRegistry.find(name);
-    return it != kRegistry.end() ? it->second() : nullptr;
+    if (it == kRegistry.end()) {
+        return -1;
+    }
+    return it->second(args);
 }
 
 } // namespace commands

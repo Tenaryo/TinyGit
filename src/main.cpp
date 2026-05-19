@@ -12,16 +12,15 @@ auto main(int argc, char* argv[]) -> int {
         return EXIT_FAILURE;
     }
 
-    auto cmd = commands::Command::create(argv[1]);
-    if (!cmd) {
-        std::cerr << "Unknown command " << argv[1] << '\n';
-        return EXIT_FAILURE;
-    }
-
     std::vector<std::string_view> args;
     for (int i = 2; i < argc; ++i) {
         args.emplace_back(argv[i]);
     }
 
-    return cmd->execute(args);
+    int result = commands::run(argv[1], args);
+    if (result < 0) {
+        std::cerr << "Unknown command " << argv[1] << '\n';
+        return EXIT_FAILURE;
+    }
+    return result;
 }

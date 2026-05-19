@@ -1,4 +1,4 @@
-#include "commands/init.hpp"
+#include "commands/command.hpp"
 
 #include <filesystem>
 #include <fstream>
@@ -6,7 +6,7 @@
 
 namespace commands {
 
-auto InitCommand::execute([[maybe_unused]] std::span<std::string_view> args) -> int {
+auto handle_init([[maybe_unused]] std::span<std::string_view> args) -> int {
     try {
         std::filesystem::create_directory(".git");
         std::filesystem::create_directory(".git/objects");

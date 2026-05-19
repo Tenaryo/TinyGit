@@ -1,11 +1,11 @@
-#include "commands/commit_tree.hpp"
+#include "commands/command.hpp"
 #include "objects/commit.hpp"
 
 #include <iostream>
 
 namespace commands {
 
-auto CommitTreeCommand::execute(std::span<std::string_view> args) -> int {
+auto handle_commit_tree(std::span<std::string_view> args) -> int {
     std::string_view tree_sha;
     std::string_view parent_sha;
     std::string_view message;
@@ -25,7 +25,7 @@ auto CommitTreeCommand::execute(std::span<std::string_view> args) -> int {
         return 1;
     }
 
-    auto sha = objects::Commit::write_commit(tree_sha, parent_sha, message);
+    auto sha = objects::commit::write_commit(tree_sha, parent_sha, message);
     if (!sha) {
         std::cerr << sha.error() << "\n";
         return 1;

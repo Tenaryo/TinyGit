@@ -4,17 +4,14 @@
 #include <string>
 #include <string_view>
 
-namespace objects {
+namespace objects::commit {
 
-class Commit {
-  public:
-    static auto create_commit_data(std::string_view tree_sha,
-                                   std::string_view parent_sha,
-                                   std::string_view message) -> std::string;
+auto create_commit_data(std::string_view tree_sha,
+                        std::string_view parent_sha,
+                        std::string_view message) -> std::string;
 
-    static auto write_commit(std::string_view tree_sha,
-                             std::string_view parent_sha,
-                             std::string_view message) -> std::expected<std::string, std::string>;
-};
+auto write_commit(std::string_view tree_sha,
+                  std::string_view parent_sha,
+                  std::string_view message) -> std::expected<std::string, std::string>;
 
-} // namespace objects
+} // namespace objects::commit
